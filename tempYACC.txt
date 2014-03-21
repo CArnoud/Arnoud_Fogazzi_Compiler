@@ -10,7 +10,7 @@ header:					variableType TK_IDENTIFIER '(' parameters ')';
 parameters:				empty | parameterList;
 parameterList:			variableType TK_IDENTIFIER ',' parameterList | variableType TK_IDENTIFIER;
 localDeclarations:		simpleDeclarations;
-simpleVariables:		empty | simpleDeclarationList;
+simpleDeclarations:		empty | simpleDeclarationList;
 simpleDeclarationList:	simpleDeclaration simpleDeclarationList | simpleDeclaration;
 
 command:				block | simpleCommand;
