@@ -3,11 +3,19 @@
 #include "hash.h"
 
 extern FILE* yyin;
+
+void yyerror(char const*);
+
 %}
+%union {
+	struct hash_node *symbol;
+	};
+
 %token KW_WORD KW_BOOL KW_BYTE KW_IF KW_THEN KW_ELSE KW_LOOP KW_INPUT KW_OUTPUT KW_RETURN
 %token OPERATOR_LE OPERATOR_GE OPERATOR_EQ OPERATOR_NE OPERATOR_AND OPERATOR_OR
-%token TK_IDENTIFIER LIT_INTEGER LIT_FALSE LIT_TRUE LIT_CHAR LIT_STRING
+%token <symbol> TK_IDENTIFIER LIT_INTEGER LIT_FALSE LIT_TRUE LIT_CHAR LIT_STRING
 %token TOKEN_ERROR
+%glr-parser
 %%
 
 program:					empty | declaration program | function program	{ return(0); }
@@ -54,6 +62,11 @@ literal:					LIT_STRING | LIT_CHAR | LIT_INTEGER | LIT_TRUE | LIT_FALSE
 empty:					;
 
 %%
+void yyerror(char const *s)
+{
+	fprintf(stderr, "%s\n", s);
+}
+
 /*int main()
 {
 	yyin = fopen("in.txt", "r");
