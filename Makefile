@@ -1,9 +1,6 @@
-etapa2: 		rules.o lex.yy.o hash.o main.o
-				gcc hash.o lex.yy.o main.o -o etapa2
-				
-main.o: 		main.c
-				gcc -c main.c
-				
+etapa2: 		rules.o lex.yy.o hash.o 
+				gcc hash.o lex.yy.o -o etapa2
+					
 hash.o:			hash.c
 				gcc -c hash.c
 				
