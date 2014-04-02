@@ -1,6 +1,6 @@
 %{
-#include "tokens.h"
 #include "hash.h"
+#include "rules.tab.h"
 
 int numberOfLines = 1;
 int running = 1;

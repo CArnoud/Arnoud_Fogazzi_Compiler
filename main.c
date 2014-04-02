@@ -1,39 +1,25 @@
 #include <stdio.h>
-#include "tokens.h"
 #include "hash.h"
+//#include "rules.tab.h"
 
 extern FILE* yyin;
-extern int yylex();
-extern int running;
+extern FILE *yyout;
+extern int yyparse();
 extern int getLineNumber();
 
+void yyerror (char const *s)
+{
+	fprintf (stderr, "%s\n", s);
+}
 
 int main()
 {
-	int token;
 	yyin = fopen("in.txt", "r");
-	while (running)
-	{
-		token = yylex();
-		switch(token)
-		{
-			case KW_WORD: 			printf("KW_WORD ");
-										break;
-			case LIT_STRING:		printf("STRING! ");
-										break;
-			case LIT_CHAR:			printf("CHAR ");
-										break;
-			case LIT_INTEGER:		printf("INT ");
-										break;
-			case TK_IDENTIFIER:	printf("ID ");
-										break;
-			case OPERATOR_EQ:		printf("EQ ");
-										break;
-			case TOKEN_ERROR:		printf("ERRO ");
-										break;
-			default:					printf("%c ", token);
-		}
-	}
+	int result = yyparse();
+	if (result == 0)
+		printf("This IS a program!");
+	else
+		printf("Something is wrong, return %i",result);
 	printf("\nconteudo da tabela hash:\n");
 	hashPrint();
 	printf("o arquivo de entrada tem %d linhas\n", getLineNumber());
