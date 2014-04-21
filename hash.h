@@ -1,3 +1,6 @@
+#ifndef HASH_H
+#define HASH_H
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -33,3 +36,4 @@ Hash_Node* hashFind(char*);
 Hash_Node* hashInsert(char*, int);
 void hashPrint();
 
+#endif

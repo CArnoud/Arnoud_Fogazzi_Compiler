@@ -1,6 +1,6 @@
 %{
 #include "hash.h"
-#include "rules.tab.h"
+#include "parser.tab.h"
 
 int numberOfLines = 1;
 int running = 1;
