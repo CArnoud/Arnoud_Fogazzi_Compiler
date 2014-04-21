@@ -9,7 +9,7 @@ int running = 1;
 %x COMM_M
 %x COMM_S
 %%
-"word"									{ return KW_WORD; }
+"word"									{ return KW_WORD; hashInsert(yytext, SYMBOL_LIT_TRUE);}
 "bool"									{ return KW_BOOL; }
 "byte"									{ return KW_BYTE; }
 "if"										{ return KW_IF; }
