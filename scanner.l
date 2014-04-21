@@ -19,23 +19,23 @@ int running = 1;
 "input"									{ return KW_INPUT; }
 "return"									{ return KW_RETURN; }
 "output"									{ return KW_OUTPUT; }
-"true"									{ return LIT_TRUE; }
-"false"									{ return LIT_FALSE; }
+"true"									{ yylval.symbol = hashInsert(yytext, SYMBOL_LIT_TRUE); return LIT_TRUE; }
+"false"									{ yylval.symbol = hashInsert(yytext, SYMBOL_LIT_FALSE); return LIT_FALSE; }
 "<="										{ return OPERATOR_LE; }
 ">="										{ return OPERATOR_GE; }
 "=="										{ return OPERATOR_EQ; }
 "!="										{ return OPERATOR_NE; }
 "&&"										{ return OPERATOR_AND; }
 "||"										{ return OPERATOR_OR; }
-[0-9]*[a-zA-Z_][a-zA-Z_0-9]*		{ hashInsert(yytext, HASH_ID); return TK_IDENTIFIER; }
-[0-9]+									{ hashInsert(yytext, HASH_INTEGER); return LIT_INTEGER; }
-'.' 										{ return LIT_CHAR; }
-\"((\\\")|[^"])*\"					{ return LIT_STRING; }
+[0-9]*[a-zA-Z_][a-zA-Z_0-9]*		{ yylval.symbol = hashInsert(yytext, SYMBOL_IDENTIFIER); return TK_IDENTIFIER; }
+[0-9]+									{ yylval.symbol = hashInsert(yytext, SYMBOL_LIT_INTEGER); return LIT_INTEGER; }
+'.' 										{ yylval.symbol = hashInsert(yytext, SYMBOL_LIT_CHAR); return LIT_CHAR; }
+\"((\\\")|[^"])*\"					{ yylval.symbol = hashInsert(yytext, SYMBOL_LIT_STRING); return LIT_STRING; }
 "//"										{ BEGIN(COMM_S); }
 "/*"										{ BEGIN(COMM_M); }
 ","|";"|":"|"("|")"|"["|"]"|"{"|"}"|"+"|"-"|"*"|"/"|"<"|">"|"="|"!"|"&"|"$"	{ return yytext[0]; }
-[ \t]+    								/* eliminar espaços em braco */
-\n											{ numberOfLines++; }
+[ \t]+    								/* elimina espaços em braco */
+\n											{ numberOfLines++;}
 .											{ return TOKEN_ERROR; }
 
 <COMM_M>"*/"							{ BEGIN(INITIAL); }

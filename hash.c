@@ -33,7 +33,7 @@ Hash_Node* hashFind(char *text)
 	return NULL;
 }
 
-void hashInsert(char *text, int token)
+Hash_Node* hashInsert(char *text, int token)
 {
 	int address;
 	if (hashFind(text) == NULL)
@@ -45,7 +45,10 @@ void hashInsert(char *text, int token)
 		node->type = token;
 		node->next = table[address];
 		table[address] = node;
+		return node;
 	}
+	else
+		return NULL;
 }
 
 void hashPrint()
