@@ -33,60 +33,61 @@ syntaxTree *rootNode;
 %glr-parser
 %%
 
-program					: empty 
-							| program declaration  
-							| program function   										{ return(0); }
+program					: declarations { return(0); }
 
-function					: header body ';'
+declarations			: empty 							{ $$ = NULL; }
+							| declarations declaration { $$ = create_AST_Node(AST_DECLARATION, 0, $1, $2, NULL, NULL); }
+							| declarations function {$$ = create_AST_Node(AST_DECLARATION, 0, $1, $2, NULL, NULL); } 										
+function					: header body ';' { $$ = create_AST_Node(AST_FUNCTION_DECLARATION, 0, $1, $2, NULL, NULL); }
 
-header					: variableType TK_IDENTIFIER '(' parameters ')'
+header					: variableType TK_IDENTIFIER '(' parameters ')' { $$ = create_AST_Node(AST_FUNCTION_HEADER, $2, $1, $3, NULL, NULL); }
 
-parameters				: empty 
-							| parameterList
+parameters				: empty { $$ = NULL; }
+							| parameterList { $$ = $1; }
 
-parameterList			: parameterList ',' variableType TK_IDENTIFIER   
-							| variableType TK_IDENTIFIER
+parameterList			: parameterList ',' variableType TK_IDENTIFIER   { $$ = create_AST_Node(AST_PARAMETER_LIST, $4, $3, $1, NULL, NULL); }
+							| variableType TK_IDENTIFIER { $$ = create_AST_Node(AST_PARAMETER_LIST, $2, $1, NULL, NULL, NULL); }
 
-body						: command
+body						: command		{ $$ = $1; }
 
-command					: block 
-							| simpleCommand
+command					: block 			 	{ $$ = $1; }
+							| simpleCommand	{ $$ = $1; }	
 
-block						: '{' simpleCommandList '}'
+block						: '{' simpleCommandList '}' { $$ = create_AST_Node(AST_BLOCK, 0, $2, NULL, NULL, NULL); }
 
-simpleCommandList		: empty 
-							| simpleCommandList simpleCommand
+simpleCommandList		: empty { $$ = NULL; }
+							| simpleCommandList simpleCommand { $$ = create_AST_Node(AST_COMMAND_LIST, 0, $2, $1, NULL, NULL); }
 
-simpleCommand			: assignment 
-							| input 
-							| output 
-							| return 
-							| if 
-							| loop 
+simpleCommand			: assignment { $$ = $1; }
+							| input 		{ $$ = $1; }
+							| output { $$ = $1; }
+							| return { $$ = $1; }
+							| if { $$ = $1; }
+							| loop { $$ = $1; }
 
-assignment				: TK_IDENTIFIER '=' expression 
-							| TK_IDENTIFIER '[' expression ']' '=' expression
+assignment				: TK_IDENTIFIER '=' expression { $$ = create_AST_Node(AST_VAR_ASSINGN, $1, $3, NULL, NULL, NULL); }
+							| TK_IDENTIFIER '[' expression ']' '=' expression	{ $$ = create_AST_Node(AST_ARR_ASSINGN, $1, $3, $6, NULL, NULL); }
 
-input						: KW_INPUT TK_IDENTIFIER
+input						: KW_INPUT TK_IDENTIFIER { $$ = create_AST_Node(AST_INPUT, $2, NULL, NULL, NULL, NULL); }
 
-output					: KW_OUTPUT elementList
+output					: KW_OUTPUT elementList { $$ = create_AST_Node(AST_OUTPUT, 0, $2, NULL, NULL, NULL); }
 
-elementList				: elementList ',' expression 
-							| expression
+elementList				: elementList ',' expression { $$ = create_AST_Node(AST_ELEMENT_LIST, 0, $3, $1, NULL, NULL); }
+							| expression { $$ = create_AST_Node(AST_ELEMENT_LIST, 0, $1, NULL, NULL, NULL); }
 
-return					: KW_RETURN expression
+return					: KW_RETURN expression { $$ = create_AST_Node(AST_RETURN, 0, $2, NULL, NULL, NULL); }
 
-if							: KW_IF '(' expression ')' KW_THEN command 
-							| KW_IF '(' expression ')' KW_ELSE command KW_THEN command 
+if							: KW_IF '(' expression ')' KW_THEN command { $$ = create_AST_Node(AST_IF_THEN, 0, $3, $6, NULL, NULL); }
+							| KW_IF '(' expression ')' KW_ELSE command KW_THEN command  { $$ = create_AST_Node(AST_IF_ELSE, 0, $3, $6, $8, NULL); }
 
-loop						: KW_LOOP command '(' expression ')'	
+loop						: KW_LOOP command '(' expression ')' { $$ = create_AST_Node(AST_LOOP, 0, $2, $4, NULL, NULL); }	
 
 expression				: functionCall 																		{ $$ = $1; }
 							| literal 																				{ $$ = $1; }
-							| TK_IDENTIFIER '[' expression ']' 												{ $$ = create_AST_Node(AST_ARRAY, 0, $1, $3, NULL, NULL); }
-							| TK_IDENTIFIER 																		{ $$ = create_AST_Node(AST_VARIABLE, 0, $1, NULL, NULL, NULL); }
-							| '&' TK_IDENTIFIER 																	{ $$ = create_AST_Node(AST_OPERATOR_REF, 0, $2, NULL, NULL, NULL); }
-							| '$' TK_IDENTIFIER 																	{ $$ = create_AST_Node(AST_OPERATOR_DEREF, 0, $2, NULL, NULL, NULL); }
+							| TK_IDENTIFIER '[' expression ']' 												{ $$ = create_AST_Node(AST_ARRAY, $1, $3, NULL, NULL, NULL); }
+							| TK_IDENTIFIER 																		{ $$ = create_AST_Node(AST_VARIABLE, $1, NULL, NULL, NULL, NULL); }
+							| '&' TK_IDENTIFIER 																	{ $$ = create_AST_Node(AST_OPERATOR_REF, $2, NULL, NULL, NULL, NULL); }
+							| '$' TK_IDENTIFIER 																	{ $$ = create_AST_Node(AST_OPERATOR_DEREF, $2, NULL, NULL, NULL, NULL); }
 							| '!' expression 																		{ $$ = create_AST_Node(AST_OPERATOR_NOT, 0, $2, NULL, NULL, NULL); }
 							| '(' expression ')'																	{ $$ = create_AST_Node(AST_PARENTHESIS, 0, $2, NULL, NULL, NULL); }
 							| expression '+' expression														{ $$ = create_AST_Node(AST_OPERATOR_ADD, 0, $1, $3, NULL, NULL); }
@@ -104,30 +105,30 @@ expression				: functionCall 																		{ $$ = $1; }
 
 functionCall			: TK_IDENTIFIER '(' arguments ')'												{ $$ = create_AST_Node(AST_FUNCTION_CALL, $1, $3, NULL, NULL, 0); }
 
-arguments				: empty 
-							| argumentList
+arguments				: empty { $$ = NULL; }
+							| argumentList { $$ = $1 }
 
-argumentList			: argumentList ',' argument
-							| argument							
+argumentList			: argumentList ',' argument { $$ = create_AST_Node(AST_ARGUMENT_LIST, 0, $3, $1, NULL, NULL); }
+							| argument { $$ = create_AST_Node(AST_ARGUMENT_LIST, 0, $1, NULL, NULL, NULL); }			
 
-argument					: expression
+argument					: expression { $$ = $1; }
 
-declaration				: simpleDeclaration 
-							| pointerDeclaration 
-							| arrayDeclaration 
+declaration				: simpleDeclaration { $$ = $1; }
+							| pointerDeclaration { $$ = $1; }
+							| arrayDeclaration { $$ = $1; }
 
-simpleDeclaration		: variableType TK_IDENTIFIER ':' literal ';'										{ $$ = create_AST_Node(AST_SIMPLE_DECLARATION, 0, $1, $2, $4, NULL); }
+simpleDeclaration		: variableType TK_IDENTIFIER ':' literal ';'										{ $$ = create_AST_Node(AST_SIMPLE_DECLARATION, $2, $1, $4, NULL, NULL); }
 
-pointerDeclaration	: variableType '$' TK_IDENTIFIER ':' literal ';'								{ $$ = create_AST_Node(AST_POINTER_DECLARATION, 0, $1, $3, $5, NULL); }
+pointerDeclaration	: variableType '$' TK_IDENTIFIER ':' literal ';'								{ $$ = create_AST_Node(AST_POINTER_DECLARATION, $3, $1, $5, NULL, NULL); }
 
-arrayDeclaration		: variableType TK_IDENTIFIER '[' LIT_INTEGER ']' ';' 							{ $$ = create_AST_Node(AST_ARRAY_DECLARATION, 0, $1, $2, $4, NULL); }
-							| variableType TK_IDENTIFIER '[' LIT_INTEGER ']' ':' literalList ';'		{ $$ = create_AST_Node(AST_ARRAY_DECLARATION, 0, $1, $2, $4, $7); }
+arrayDeclaration		: variableType TK_IDENTIFIER '[' LIT_INTEGER ']' ';' 							{ $$ = create_AST_Node(AST_ARRAY_DECLARATION, $2, $1, $4, NULL, NULL); }
+							| variableType TK_IDENTIFIER '[' LIT_INTEGER ']' ':' literalList ';'		{ $$ = create_AST_Node(AST_ARRAY_DECLARATION, $2, $1, $4, $7, NULL); }
 
 variableType			: KW_WORD 																					{ $$ = create_AST_Node(AST_KW_WORD, 0, NULL, NULL, NULL, NULL); }
 							| KW_BOOL 																					{ $$ = create_AST_Node(AST_KW_BOOL, 0, NULL, NULL, NULL, NULL); }
 							| KW_BYTE																					{ $$ = create_AST_Node(AST_KW_BYTE, 0, NULL, NULL, NULL, NULL); }
 
-literalList				: literalList literal  																	{ $$ = create_AST_Node(AST_LIT_LIST, 0, $1, $2, NULL, NULL); }
+literalList				: literalList literal  																	{ $$ = create_AST_Node(AST_LIT_LIST, 0, $2, $1, NULL, NULL); }
 							| literal																					{ $$ = $1; }
 
 literal					: LIT_STRING 																				{ $$ = create_AST_Node(AST_LIT_STRING, $1, 0, 0, 0, 0); }

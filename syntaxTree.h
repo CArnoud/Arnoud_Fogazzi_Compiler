@@ -19,7 +19,7 @@ typedef enum {
 
 typedef struct _syntaxTree {
 	AST_TYPE type;
-	int value; 
+	Hash_Node *value; 
 	struct _syntaxTree *child[MAX_CHILDREN];
 } syntaxTree;
 
